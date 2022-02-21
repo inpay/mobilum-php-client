@@ -1,0 +1,15 @@
+{
+  "name": "swaply/mobilum-otc-php",
+  "description": "Client for communicating with Mobilum OTC system",
+  "type": "library",
+  "homepage": "https://swap.ly/",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Swaply\\": "lib/"
+    }
+  }
+}
