@@ -1,6 +1,6 @@
 <?php
 
-namespace MobilumOtc;
+namespace Swaply;
 
 class MobilumOtcClient {
 
