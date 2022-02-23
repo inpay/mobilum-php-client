@@ -115,7 +115,7 @@ class MobilumOtcClient {
 
     public function acceptOffer($offerCode) {
 
-      $uri = "/$this->version/offers/$offerCode";
+      $uri = "/$this->version/offers/$offerCode/accept";
 
         return $this->call('put', $uri);
     }
