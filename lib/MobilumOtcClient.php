@@ -37,7 +37,9 @@ class MobilumOtcClient {
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         if($httpCode >= 500) {
-            $errorMsg = curl_error($curl);
+            $decoded = json_decode($response);
+            $errorMsg = isset($decoded->reason) ? $decoded->reason : curl_error($curl);
+
             throw new \Exception($errorMsg);
         }
 
