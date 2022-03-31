@@ -140,4 +140,16 @@ class MobilumOtcClient {
         return $this->call('delete', $uri);
     }
 
+    public function preTrade($type, $pair, $amount) {
+        $data = [
+          'type' => $type,
+          'pair' => $pair,
+          'amount' => $amount
+        ];
+  
+        $uri = "/$this->version/offers/pretrade";
+  
+          return $this->call('post', $uri, $data);
+      }
+
 }
