@@ -2,6 +2,9 @@
 
 namespace Swaply;
 
+
+use Firebase\JWT\JWT;
+
 class MobilumOtcClient {
 
     private $version = '1.0';
@@ -9,15 +12,17 @@ class MobilumOtcClient {
 
     protected $apiKey;
     protected $apiSecret;
+    protected $issuer;
 
-    public function __construct($apiKey, $apiSecret, $testServer = false) {
+    public function __construct($apiKey, $apiSecret, $testServer = false, $issuerName = "Mobilum PHP client") {
         $this->apiUrl = $testServer ? 'https://oxygen.inpay.io' : 'https://oxygen.inpay.io';
 
         $this->apiKey = $apiKey;
         $this->apiSecret = $apiSecret;
+        $this->issuer = $issuerName;
     }
 
-    private function call($httpMethod, $uri, $data = null){
+    private function call($httpMethod, $uri, $data = []){
         $headers = $this->createHeaders($httpMethod, $uri, $data);
 
         $curl = curl_init();
@@ -27,9 +32,13 @@ class MobilumOtcClient {
 
         if ($httpMethod === 'post'){
             curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
         } else if ($httpMethod === 'put') {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        }
+
+        if($httpMethod !== 'get'){
+            $data = $this->createJwtToken($data);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
 
         $response = curl_exec($curl);
@@ -50,21 +59,11 @@ class MobilumOtcClient {
         return $response;
     }
 
-    private function createHeaders($httpMethod, $uri, $data = null){
-        $nonce = $this->nonce();
-
-        $route = implode(' ', [strtoupper($httpMethod), $uri]);
-
-        $data = empty($data) ? '' : json_encode($data);
-        $signature = $this->signature($route, $nonce, $this->apiKey, $data, $this->apiSecret);
-
+    private function createHeaders(){
         $headers = [
             "Accept: application/json",
             "Content-Type: application/json",
-            "X-API-Key: $this->apiKey",
-            "X-API-Nonce: $nonce",
-            "X-API-Route: $route",
-            "X-API-Signature: $signature",
+            "Api-Key: $this->apiKey",
         ];
 
         return $headers;
@@ -76,9 +75,15 @@ class MobilumOtcClient {
         return $nonce;
     }
 
-    private function signature($route, $nonce, $apiKey, $data, $apiSecret) {
-        $toBeSigned = implode('', [$route, $nonce, $apiKey, $data]);
-        return hash_hmac('sha512', $toBeSigned, $apiSecret);
+    private function createJwtToken($payload) {
+        $jwtData = [
+            "iss" => $this->issuer,
+            "iat" => time(),
+            "nonce" => $this->nonce(),
+            "payload" => $payload
+        ];
+        $jwtToken = JWT::encode($jwtData, $this->apiSecret, 'HS256');
+        return $jwtToken;
     }
 
     private function addOptionalParameter(array $data, string $name, $value = null){
@@ -123,15 +128,15 @@ class MobilumOtcClient {
     }
 
     public function getOffers() {
-        $uri = "/$this->version/offers";
+        $uri = "/$this->version/offers/get";
 
-        return $this->call('get', $uri);
+        return $this->call('post', $uri);
     }
 
     public function getOffer($offerCode) {
-        $uri = "/$this->version/offers/$offerCode";
+        $uri = "/$this->version/offers/$offerCode/get";
 
-        return $this->call('get', $uri);
+        return $this->call('post', $uri);
     }
 
     public function cancelOffer($offerCode) {

@@ -11,5 +11,8 @@
     "psr-4": {
       "Swaply\\": "lib/"
     }
+  },
+  "require-dev": {
+    "firebase/php-jwt": "^6.2"
   }
 }
