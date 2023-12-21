@@ -15,7 +15,7 @@ class MobilumOtcClient {
     protected $issuer;
 
     public function __construct($apiKey, $apiSecret, $testServer = false, $issuerName = "Mobilum PHP client") {
-        $this->apiUrl = $testServer ? 'https://oxygen.inpay.io' : 'https://oxygen.inpay.io';
+        $this->apiUrl = $testServer ? 'https://otcapi-test.mobilum.com' : 'https://otcapi.mobilum.com';
 
         $this->apiKey = $apiKey;
         $this->apiSecret = $apiSecret;
